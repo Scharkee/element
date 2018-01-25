@@ -1,9 +1,9 @@
 <script>
-import ajax from './ajax';
-import UploadDragger from './upload-dragger.vue';
+import ajax from "./ajax";
+import UploadDragger from "./upload-dragger.vue";
 
 export default {
-  inject: ['uploader'],
+  inject: ["uploader"],
   components: {
     UploadDragger
   },
@@ -15,7 +15,7 @@ export default {
     },
     name: {
       type: String,
-      default: 'file'
+      default: "file"
     },
     data: Object,
     headers: Object,
@@ -57,7 +57,7 @@ export default {
 
   methods: {
     isImage(str) {
-      return str.indexOf('image') !== -1;
+      return str.indexOf("image") !== -1;
     },
     handleChange(ev) {
       const files = ev.target.files;
@@ -72,9 +72,13 @@ export default {
       }
 
       let postFiles = Array.prototype.slice.call(files);
-      if (!this.multiple) { postFiles = postFiles.slice(0, 1); }
+      if (!this.multiple) {
+        postFiles = postFiles.slice(0, 1);
+      }
 
-      if (postFiles.length === 0) { return; }
+      if (postFiles.length === 0) {
+        return;
+      }
 
       postFiles.forEach(rawFile => {
         this.onStart(rawFile);
@@ -90,16 +94,19 @@ export default {
 
       const before = this.beforeUpload(rawFile);
       if (before && before.then) {
-        before.then(processedFile => {
-          const fileType = Object.prototype.toString.call(processedFile);
-          if (fileType === '[object File]' || fileType === '[object Blob]') {
-            this.post(processedFile);
-          } else {
-            this.post(rawFile);
+        before.then(
+          processedFile => {
+            const fileType = Object.prototype.toString.call(processedFile);
+            if (fileType === "[object File]" || fileType === "[object Blob]") {
+              this.post(processedFile);
+            } else {
+              this.post(rawFile);
+            }
+          },
+          () => {
+            this.onRemove(null, rawFile);
           }
-        }, () => {
-          this.onRemove(null, rawFile);
-        });
+        );
       } else if (before !== false) {
         this.post(rawFile);
       } else {
@@ -115,7 +122,7 @@ export default {
           reqs[uid].abort();
         }
       } else {
-        Object.keys(reqs).forEach((uid) => {
+        Object.keys(reqs).forEach(uid => {
           if (reqs[uid]) reqs[uid].abort();
           delete reqs[uid];
         });
@@ -128,6 +135,7 @@ export default {
         withCredentials: this.withCredentials,
         file: rawFile,
         data: this.data,
+        uid: uid,
         filename: this.name,
         action: this.action,
         onProgress: e => {
@@ -176,7 +184,7 @@ export default {
     } = this;
     const data = {
       class: {
-        'el-upload': true
+        "el-upload": true
       },
       on: {
         click: handleClick,
@@ -185,13 +193,23 @@ export default {
     };
     data.class[`el-upload--${listType}`] = true;
     return (
-      <div {...data} tabindex="0" >
-        {
-          drag
-            ? <upload-dragger disabled={disabled} on-file={uploadFiles}>{this.$slots.default}</upload-dragger>
-            : this.$slots.default
-        }
-        <input class="el-upload__input" type="file" ref="input" name={name} on-change={handleChange} multiple={multiple} accept={accept}></input>
+      <div {...data} tabindex="0">
+        {drag ? (
+          <upload-dragger disabled={disabled} on-file={uploadFiles}>
+            {this.$slots.default}
+          </upload-dragger>
+        ) : (
+          this.$slots.default
+        )}
+        <input
+          class="el-upload__input"
+          type="file"
+          ref="input"
+          name={name}
+          on-change={handleChange}
+          multiple={multiple}
+          accept={accept}
+        />
       </div>
     );
   }
